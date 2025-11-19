@@ -803,13 +803,17 @@ g.column rect {
   font-weight: 300;
   font-size: 13px;
   height: 60px;
+  display: flex;
+  align-items: flex-start;
+}
+
+.metrics-text {
+  flex: 0 0 120px;
+  margin-right: 20px;
 }
 
 #linechart {
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 50%;
+  flex: 1;
   height: 55px;
 }
 .metrics .train {
