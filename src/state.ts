@@ -24,8 +24,12 @@ export let activations: {[key: string]: nn.ActivationFunction} = {
   "relu": nn.Activations.RELU,
   "tanh": nn.Activations.TANH,
   "sigmoid": nn.Activations.SIGMOID,
-  "linear": nn.Activations.LINEAR
+  "linear": nn.Activations.LINEAR,
+  "custom": nn.Activations.CUSTOM
 };
+
+console.log("[STATE] Activations map initialized:", Object.keys(activations));
+console.log("[STATE] Custom activation available:", activations.custom !== undefined);
 
 /** A map between names and regularization functions. */
 export let regularizations: {[key: string]: nn.RegularizationFunction} = {
@@ -168,11 +172,13 @@ export class State {
    * Deserializes the state from the url hash.
    */
   static deserializeState(): State {
+    console.log("[STATE] Deserializing state from URL hash:", window.location.hash);
     let map: {[key: string]: string} = {};
     for (let keyvalue of window.location.hash.slice(1).split("&")) {
       let [name, value] = keyvalue.split("=");
       map[name] = value;
     }
+    console.log("[STATE] Parsed URL parameters:", map);
     let state = new State();
 
     function hasKey(name: string): boolean {
@@ -192,7 +198,11 @@ export class State {
                 "variables of type Object");
           }
           if (hasKey(name) && map[name] in keyMap) {
+            console.log(`[STATE] Setting ${name} to:`, map[name]);
             state[name] = keyMap[map[name]];
+            if (name === 'activation') {
+              console.log(`[STATE] Activation function set:`, state[name]);
+            }
           }
           break;
         case Type.NUMBER:

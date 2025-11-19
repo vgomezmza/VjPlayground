@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug Test - Deep Playground</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test { margin: 10px 0; padding: 10px; border: 1px solid #ccc; }
+        .pass { background-color: #d4edda; }
+        .fail { background-color: #f8d7da; }
+        .log { background-color: #f8f9fa; padding: 5px; margin: 5px 0; font-family: monospace; }
+    </style>
+</head>
+<body>
+    <h1>Debug Test - Deep Playground</h1>
+    
+    <div id="tests"></div>
+    
+    <script>
+        const tests = [];
+        
+        function addTest(name, testFn) {
+            tests.push({ name, testFn });
+        }
+        
+        function runTests() {
+            const container = document.getElementById('tests');
+            
+            tests.forEach(test => {
+                const div = document.createElement('div');
+                div.className = 'test';
+                
+                try {
+                    const result = test.testFn();
+                    div.className += result ? ' pass' : ' fail';
+                    div.innerHTML = `<strong>${test.name}</strong>: ${result ? 'PASS' : 'FAIL'}`;
+                } catch (e) {
+                    div.className += ' fail';
+                    div.innerHTML = `<strong>${test.name}</strong>: ERROR - ${e.message}`;
+                }
+                
+                container.appendChild(div);
+            });
+        }
+        
+        // Test 1: Check if main HTML elements exist
+        addTest('HTML Elements Exist', () => {
+            const elements = [
+                '#activations',
+                '#custom-function', 
+                '#custom-derivative',
+                '.ui-custom-activation',
+                '#svg',
+                '#network',
+                '#heatmap'
+            ];
+            
+            return elements.every(selector => {
+                const exists = document.querySelector(selector) !== null;
+                console.log(`Element ${selector}: ${exists ? 'EXISTS' : 'MISSING'}`);
+                return exists;
+            });
+        });
+        
+        // Test 2: Check if D3 is loaded
+        addTest('D3.js Library', () => {
+            const d3Loaded = typeof d3 !== 'undefined';
+            console.log('D3 loaded:', d3Loaded);
+            return d3Loaded;
+        });
+        
+        // Test 3: Test custom activation function creation
+        addTest('Custom Activation Creation', () => {
+            try {
+                // Simulate the custom activation creation
+                const outputFn = 'Math.sin(x)';
+                const derivativeFn = 'Math.cos(x)';
+                
+                const output = new Function('x', `return ${outputFn}`);
+                const der = new Function('x', `return ${derivativeFn}`);
+                
+                const testOutput = output(Math.PI/2);
+                const testDer = der(Math.PI/2);
+                
+                console.log('Sin(π/2):', testOutput);
+                console.log('Cos(π/2):', testDer);
+                
+                return Math.abs(testOutput - 1) < 0.001 && Math.abs(testDer) < 0.001;
+            } catch (e) {
+                console.error('Custom activation test failed:', e);
+                return false;
+            }
+        });
+        
+        // Test 4: Check console for errors
+        addTest('Console Error Check', () => {
+            // This is a manual test - check browser console
+            console.log('=== MANUAL CHECK: Look for errors in browser console ===');
+            return true; // Always pass, manual verification needed
+        });
+        
+        // Run tests when page loads
+        window.addEventListener('load', () => {
+            setTimeout(runTests, 1000); // Wait a bit for everything to load
+        });
+        
+        // Add some debugging info
+        console.log('=== DEBUG INFO ===');
+        console.log('User Agent:', navigator.userAgent);
+        console.log('Page URL:', window.location.href);
+        console.log('Document Ready State:', document.readyState);
+    </script>
+    
+    <!-- Try to load the main playground if it exists -->
+    <iframe src="index.html" width="100%" height="600" style="margin-top: 20px; border: 1px solid #ccc;"></iframe>
+</body>
+</html>

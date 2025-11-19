@@ -330,6 +330,26 @@ header h1 .optional {
   border-bottom-color: #183D4E;
 }
 
+#top-controls .control input[type="text"] {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  display: block;
+  background: none;
+  border: none;
+  border-radius: 0;
+  padding: 6px 0;
+  width: 100%;
+  font-size: 14px;
+  border-bottom: solid 1px #ccc;
+  color: #333;
+  outline: none;
+}
+
+#top-controls .control input[type="text"]:focus {
+  border-bottom-color: #183D4E;
+}
+
 #top-controls .control .select::after {
   class: "material-icons";
   content: "arrow_drop_down";
@@ -991,4 +1011,225 @@ footer .links a:hover {
 /* Keep grey focus circle for non-start values */
 #main-part .mdl-slider.is-upgraded:focus:not(:active)::-webkit-slider-thumb {
   box-shadow: 0 0 0 10px rgba(0,0,0, 0.12);
+}
+
+/* Modal Styles */
+.modal {
+  position: fixed;
+  z-index: 2000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0,0.5);
+}
+
+.modal-content {
+  background-color: #fefefe;
+  margin: 5% auto;
+  border-radius: 8px;
+  width: 80%;
+  max-width: 800px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+}
+
+.modal-header {
+  padding: 20px;
+  border-bottom: 1px solid #ddd;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-header h3 {
+  margin: 0;
+  color: #333;
+}
+
+.close {
+  color: #aaa;
+  font-size: 28px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.close:hover {
+  color: #000;
+}
+
+.modal-body {
+  padding: 20px;
+}
+
+.syntax-help {
+  background: #f0f8ff;
+  padding: 10px;
+  border-radius: 4px;
+  margin-bottom: 20px;
+  font-size: 13px;
+  color: #333;
+}
+
+.function-input-section {
+  margin-bottom: 20px;
+}
+
+.function-input-section label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: bold;
+  color: #333;
+}
+
+.input-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+#custom-function-input {
+  flex: 1;
+  padding: 10px;
+  border: 2px solid #ddd;
+  border-radius: 4px;
+  font-family: 'Courier New', monospace;
+  font-size: 14px;
+}
+
+#custom-function-input:focus {
+  outline: none;
+  border-color: #183D4E;
+}
+
+#custom-function-input.valid {
+  border-color: #28a745;
+}
+
+#custom-function-input.invalid {
+  border-color: #dc3545;
+}
+
+#validation-indicator {
+  font-size: 18px;
+}
+
+#validation-message {
+  margin-top: 5px;
+  font-size: 12px;
+  min-height: 16px;
+}
+
+.validation-success {
+  color: #28a745;
+}
+
+.validation-error {
+  color: #dc3545;
+}
+
+.examples-section {
+  margin-bottom: 20px;
+}
+
+.examples-section h4 {
+  margin: 0 0 10px 0;
+  color: #333;
+}
+
+.example-categories {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+}
+
+.example-category h5 {
+  margin: 0 0 8px 0;
+  color: #183D4E;
+  font-size: 14px;
+}
+
+.example-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.example-item {
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  padding: 4px 8px;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 12px;
+  font-family: 'Courier New', monospace;
+  transition: all 0.2s ease;
+}
+
+.example-item:hover {
+  background: #e9ecef;
+  border-color: #183D4E;
+}
+
+.operators-section {
+  margin-bottom: 20px;
+}
+
+.operators-section h4 {
+  margin: 0 0 10px 0;
+  color: #333;
+}
+
+.operators-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.operators-list code {
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 12px;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid #dee2e6;
+}
+
+.apply-btn, .cancel-btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.apply-btn {
+  background: #183D4E;
+  color: white;
+}
+
+.apply-btn:hover:not(:disabled) {
+  background: #0f2a3a;
+}
+
+.apply-btn:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+}
+
+.cancel-btn {
+  background: #6c757d;
+  color: white;
+}
+
+.cancel-btn:hover {
+  background: #545b62;
 }

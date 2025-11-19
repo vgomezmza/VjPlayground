@@ -322,12 +322,167 @@ function makeGUI() {
   d3.select("label[for='batchSize'] .value").text(state.batchSize);
 
   let activationDropdown = d3.select("#activations").on("change", function() {
-    state.activation = activations[this.value];
-    parametersChanged = true;
-    reset();
+    console.log("[PLAYGROUND] Activation changed to:", this.value);
+    let customDiv = d3.select(".ui-custom-activation");
+    
+    if (this.value === "custom") {
+      console.log("[PLAYGROUND] Custom selected - opening modal");
+      customDiv.style("display", "block");
+      
+      // Abrir el modal automáticamente
+      const modal = d3.select("#custom-activation-modal");
+      modal.style("display", "block");
+      
+    } else {
+      console.log("[PLAYGROUND] Using built-in activation:", this.value);
+      customDiv.style("display", "none");
+      state.activation = activations[this.value];
+      parametersChanged = true;
+      reset();
+    }
   });
   activationDropdown.property("value",
       getKeyFromValue(activations, state.activation));
+
+  // Setup modal functionality
+  setupCustomActivationModal();
+
+  function setupCustomActivationModal() {
+    const modal = d3.select("#custom-activation-modal");
+    const closeButton = d3.select(".close");
+    const functionInput = d3.select("#custom-function-input");
+    const validationIndicator = d3.select("#validation-indicator");
+    const validationMessage = d3.select("#validation-message");
+    const applyButton = d3.select("#apply-custom-function");
+    const cancelButton = d3.select("#cancel-custom-function");
+    
+    console.log("[PLAYGROUND] Modal elements found:", {
+      modal: !modal.empty(),
+      closeButton: !closeButton.empty(),
+      functionInput: !functionInput.empty(),
+      applyButton: !applyButton.empty()
+    });
+
+    // Close modal handlers
+    closeButton.on("click", closeModal);
+    cancelButton.on("click", closeModal);
+    
+    function closeModal() {
+      console.log("[PLAYGROUND] Closing modal");
+      modal.style("display", "none");
+      // Reset dropdown if no valid function was applied
+      if (!state.activation || state.activation === activations.linear) {
+        activationDropdown.property("value", "linear");
+      }
+    }
+
+    // Close modal when clicking outside
+    modal.on("click", function(event) {
+      if (event.target === this) {
+        closeModal();
+      }
+    });
+
+    // Real-time validation
+    functionInput.on("input", function() {
+      const functionText = this.value.trim();
+      console.log("[PLAYGROUND] Function input changed:", functionText);
+      
+      if (!functionText) {
+        resetValidation();
+        return;
+      }
+      
+      validateFunction(functionText);
+    });
+
+    function resetValidation() {
+      console.log("[PLAYGROUND] Resetting validation");
+      functionInput.classed("valid", false).classed("invalid", false);
+      validationIndicator.text("⚪");
+      validationMessage.text("").attr("class", "");
+      applyButton.property("disabled", true);
+    }
+
+    function validateFunction(functionText: string) {
+      console.log("[PLAYGROUND] Validating function:", functionText);
+      
+      try {
+        const validation = nn.validateFunctionSyntax(functionText);
+        
+        if (validation.valid) {
+          console.log("[PLAYGROUND] Function validation passed");
+          functionInput.classed("valid", true).classed("invalid", false);
+          validationIndicator.text("✓");
+          validationMessage.text("Función válida").attr("class", "validation-success");
+          applyButton.property("disabled", false);
+        } else {
+          console.log("[PLAYGROUND] Function validation failed:", validation.error);
+          functionInput.classed("valid", false).classed("invalid", true);
+          validationIndicator.text("✗");
+          validationMessage.text(validation.error || "Error de sintaxis").attr("class", "validation-error");
+          applyButton.property("disabled", true);
+        }
+      } catch (e) {
+        console.error("[PLAYGROUND] Validation error:", e);
+        functionInput.classed("valid", false).classed("invalid", true);
+        validationIndicator.text("✗");
+        validationMessage.text("Error de validación").attr("class", "validation-error");
+        applyButton.property("disabled", true);
+      }
+    }
+
+    // Apply custom function
+    applyButton.on("click", function() {
+      const functionText = (functionInput.node() as HTMLInputElement).value.trim();
+      console.log("[PLAYGROUND] Applying custom function:", functionText);
+      
+      try {
+        state.activation = nn.createCustomActivationAuto(functionText);
+        activations["custom"] = state.activation;
+        
+        console.log("[PLAYGROUND] Custom activation applied successfully");
+        
+        // Update UI display
+        d3.select("#selected-function").text(`Función: ${functionText}`);
+        
+        parametersChanged = true;
+        reset();
+        
+        // Close modal
+        modal.style("display", "none");
+        
+      } catch (e) {
+        console.error("[PLAYGROUND] Error applying custom function:", e);
+        validationMessage.text(`Error: ${e.message}`).attr("class", "validation-error");
+      }
+    });
+
+    // Handle example clicks
+    d3.selectAll(".example-item").on("click", function() {
+      const exampleFunction = this.getAttribute("data-function");
+      console.log("[PLAYGROUND] Example clicked:", exampleFunction);
+      
+      functionInput.property("value", exampleFunction);
+      validateFunction(exampleFunction);
+    });
+  }
+
+  function applyPredefinedFunction(functionKey: string) {
+    try {
+      console.log("[PLAYGROUND] Applying predefined function:", functionKey);
+      
+      state.activation = nn.createPredefinedActivation(functionKey);
+      activations["custom"] = state.activation;
+      
+      console.log("[PLAYGROUND] Predefined activation applied successfully");
+      
+      parametersChanged = true;
+      reset();
+    } catch (e) {
+      console.error("[PLAYGROUND] Error applying predefined function:", e);
+    }
+  }
 
   let learningRate = d3.select("#learningRate").on("change", function() {
     state.learningRate = +this.value;
@@ -536,7 +691,10 @@ function drawNode(cx: number, cy: number, nodeId: string, isInput: boolean,
 
 // Draw network
 function drawNetwork(network: nn.Node[][]): void {
+  console.log("Drawing network with", network.length, "layers");
   let svg = d3.select("#svg");
+  console.log("SVG element found:", !svg.empty());
+  
   // Remove all svg elements.
   svg.select("g.core").remove();
   // Remove all div elements.
@@ -938,6 +1096,7 @@ export function getOutputWeights(network: nn.Node[][]): number[] {
 }
 
 function reset(onStartup=false) {
+  console.log("Reset called, onStartup:", onStartup);
   lineChart.reset();
   state.serialize();
   if (!onStartup) {
@@ -955,12 +1114,27 @@ function reset(onStartup=false) {
   let shape = [numInputs].concat(state.networkShape).concat([1]);
   let outputActivation = (state.problem === Problem.REGRESSION) ?
       nn.Activations.LINEAR : nn.Activations.TANH;
-  network = nn.buildNetwork(shape, state.activation, outputActivation,
-      state.regularization, constructInputIds(), state.initZero);
-  lossTrain = getLoss(network, trainData);
-  lossTest = getLoss(network, testData);
-  drawNetwork(network);
-  updateUI(true);
+  
+  console.log("Building network with shape:", shape);
+  console.log("Using activation:", state.activation);
+  
+  try {
+    network = nn.buildNetwork(shape, state.activation, outputActivation,
+        state.regularization, constructInputIds(), state.initZero);
+    console.log("Network built successfully");
+    
+    lossTrain = getLoss(network, trainData);
+    lossTest = getLoss(network, testData);
+    console.log("Losses calculated - Train:", lossTrain, "Test:", lossTest);
+    
+    drawNetwork(network);
+    console.log("Network drawn");
+    
+    updateUI(true);
+    console.log("UI updated");
+  } catch (e) {
+    console.error("Error in reset function:", e);
+  }
 };
 
 function initTutorial() {

@@ -134,6 +134,150 @@ export class Activations {
     output: x => x,
     der: x => 1
   };
+  public static CUSTOM: ActivationFunction = {
+    output: x => x,
+    der: x => 1
+  };
+}
+
+/** Predefined custom activation functions */
+export const PREDEFINED_ACTIVATIONS: {[key: string]: {name: string, output: string, derivative: string}} = {
+  'swish': {
+    name: 'Swish',
+    output: 'x / (1 + Math.exp(-x))',
+    derivative: 'Math.exp(-x) * (x + Math.exp(-x) + 1) / Math.pow(1 + Math.exp(-x), 2)'
+  },
+  'leaky-relu': {
+    name: 'Leaky ReLU',
+    output: 'Math.max(0.1 * x, x)',
+    derivative: 'x > 0 ? 1 : 0.1'
+  },
+  'elu': {
+    name: 'ELU',
+    output: 'x >= 0 ? x : Math.exp(x) - 1',
+    derivative: 'x >= 0 ? 1 : Math.exp(x)'
+  },
+  'sine': {
+    name: 'Seno',
+    output: 'Math.sin(x)',
+    derivative: 'Math.cos(x)'
+  },
+  'gaussian': {
+    name: 'Gaussiana',
+    output: 'Math.exp(-x * x)',
+    derivative: '-2 * x * Math.exp(-x * x)'
+  },
+  'softplus': {
+    name: 'Softplus',
+    output: 'Math.log(1 + Math.exp(x))',
+    derivative: '1 / (1 + Math.exp(-x))'
+  }
+};
+
+/** Function to create custom activation function */
+export function createCustomActivation(outputFn: string, derivativeFn: string): ActivationFunction {
+  try {
+    console.log('[NN] Creating custom activation with:', outputFn, derivativeFn);
+    
+    // Create properly typed functions
+    const output = new Function('x', `return ${outputFn}`) as (input: number) => number;
+    const der = new Function('x', `return ${derivativeFn}`) as (input: number) => number;
+    
+    // Test with sample values
+    const testVal = output(1);
+    const testDer = der(1);
+    
+    console.log('[NN] Test output(1):', testVal);
+    console.log('[NN] Test derivative(1):', testDer);
+    
+    if (isNaN(testVal) || isNaN(testDer)) {
+      throw new Error('Function returns NaN');
+    }
+    
+    return { output, der };
+  } catch (e) {
+    console.error('[NN] Error creating custom activation:', e);
+    return Activations.LINEAR;
+  }
+}
+
+/** Function to create activation from predefined key */
+export function createPredefinedActivation(key: string): ActivationFunction {
+  const predefined = PREDEFINED_ACTIVATIONS[key];
+  if (!predefined) {
+    console.error('[NN] Predefined activation not found:', key);
+    return Activations.LINEAR;
+  }
+  
+  console.log('[NN] Creating predefined activation:', predefined.name);
+  return createCustomActivation(predefined.output, predefined.derivative);
+}
+
+/** Function to calculate numerical derivative */
+function calculateNumericalDerivative(fn: (x: number) => number, x: number, h: number = 1e-5): number {
+  try {
+    return (fn(x + h) - fn(x - h)) / (2 * h);
+  } catch (e) {
+    console.warn('[NN] Error calculating derivative at x =', x, ':', e);
+    return 0;
+  }
+}
+
+/** Function to create activation with automatic derivative calculation */
+export function createCustomActivationAuto(outputFn: string): ActivationFunction {
+  try {
+    console.log('[NN] Creating custom activation with auto-derivative:', outputFn);
+    
+    // Create the output function
+    const output = new Function('x', `return ${outputFn}`) as (input: number) => number;
+    
+    // Create derivative function using numerical differentiation
+    const der = (x: number) => calculateNumericalDerivative(output, x);
+    
+    // Test with sample values
+    const testVal = output(1);
+    const testDer = der(1);
+    
+    console.log('[NN] Test output(1):', testVal);
+    console.log('[NN] Test derivative(1):', testDer);
+    
+    if (isNaN(testVal) || isNaN(testDer)) {
+      throw new Error('Function returns NaN');
+    }
+    
+    return { output, der };
+  } catch (e) {
+    console.error('[NN] Error creating custom activation:', e);
+    throw e; // Re-throw to handle in UI
+  }
+}
+
+/** Function to validate JavaScript function syntax */
+export function validateFunctionSyntax(fnString: string): {valid: boolean, error?: string} {
+  try {
+    console.log('[NN] Validating function syntax:', fnString);
+    
+    // Try to create the function
+    const testFn = new Function('x', `return ${fnString}`);
+    
+    // Test with a few values
+    const testValues = [0, 1, -1, 0.5, -0.5];
+    for (const val of testValues) {
+      const result = testFn(val);
+      if (typeof result !== 'number') {
+        throw new Error(`Function returns non-number: ${typeof result}`);
+      }
+      if (!isFinite(result)) {
+        console.warn('[NN] Function returns non-finite value at x =', val, ':', result);
+      }
+    }
+    
+    console.log('[NN] Function validation passed');
+    return { valid: true };
+  } catch (e) {
+    console.log('[NN] Function validation failed:', e.message);
+    return { valid: false, error: e.message };
+  }
 }
 
 /** Build-in regularization functions */
