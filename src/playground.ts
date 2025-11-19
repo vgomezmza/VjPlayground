@@ -189,7 +189,11 @@ function makeGUI() {
   });
 
   player.onPlayPause(isPlaying => {
-    d3.select("#play-pause-button").classed("playing", isPlaying);
+    const playBtn = d3.select("#play-pause-button");
+    playBtn.classed("playing", isPlaying);
+    
+    // Change text
+    playBtn.html(isPlaying ? "Pause" : "Play");
   });
 
   d3.select("#next-step-button").on("click", () => {
@@ -200,6 +204,33 @@ function makeGUI() {
     }
     oneStep();
   });
+
+  // Debug: Check if buttons exist
+  console.log("[DEBUG] Button 50 found:", !d3.select("#run-50-epochs").empty());
+  console.log("[DEBUG] Button 100 found:", !d3.select("#run-100-epochs").empty());
+  
+  // Alternative approach with native addEventListener
+  const btn50 = document.getElementById("run-50-epochs");
+  const btn100 = document.getElementById("run-100-epochs");
+  
+  console.log("[DEBUG] Native btn50:", btn50);
+  console.log("[DEBUG] Native btn100:", btn100);
+  
+  if (btn50) {
+    btn50.addEventListener("click", function(event) {
+      console.log("[DEBUG] Native 50 epochs button clicked!");
+      event.stopPropagation();
+      runEpochs(50);
+    });
+  }
+  
+  if (btn100) {
+    btn100.addEventListener("click", function(event) {
+      console.log("[DEBUG] Native 100 epochs button clicked!");
+      event.stopPropagation();
+      runEpochs(100);
+    });
+  }
 
   d3.select("#data-regen-button").on("click", () => {
     generateData();
@@ -1078,6 +1109,33 @@ function oneStep(): void {
   lossTrain = getLoss(network, trainData);
   lossTest = getLoss(network, testData);
   updateUI();
+}
+
+function runEpochs(targetEpochs: number): void {
+  console.log(`[DEBUG] runEpochs called with target: ${targetEpochs}`);
+  
+  player.pause();
+  userHasInteracted();
+  
+  // Reset network
+  reset();
+  
+  simulationStarted();
+  
+  // Run epochs with animation
+  let currentEpoch = 0;
+  const runNext = () => {
+    if (currentEpoch < targetEpochs) {
+      console.log(`[DEBUG] Running epoch ${currentEpoch + 1}/${targetEpochs}`);
+      oneStep();
+      currentEpoch++;
+      setTimeout(runNext, 10);
+    } else {
+      console.log(`[DEBUG] Completed ${targetEpochs} epochs`);
+    }
+  };
+  
+  runNext();
 }
 
 export function getOutputWeights(network: nn.Node[][]): number[] {
