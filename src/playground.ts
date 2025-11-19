@@ -856,7 +856,8 @@ function addPlusMinusControl(x: number, layerIdx: number) {
   let i = layerIdx - 1;
   let firstRow = div.append("div").attr("class", `ui-numNodes${layerIdx}`);
   firstRow.append("button")
-      .attr("class", "mdl-button mdl-js-button mdl-button--icon")
+      .attr("class", "neuron-btn neuron-add-btn")
+      .text("+")
       .on("click", () => {
         let numNeurons = state.networkShape[i];
         if (numNeurons >= 8) {
@@ -865,13 +866,11 @@ function addPlusMinusControl(x: number, layerIdx: number) {
         state.networkShape[i]++;
         parametersChanged = true;
         reset();
-      })
-    .append("i")
-      .attr("class", "material-icons")
-      .text("add");
+      });
 
   firstRow.append("button")
-      .attr("class", "mdl-button mdl-js-button mdl-button--icon")
+      .attr("class", "neuron-btn neuron-remove-btn")
+      .text("-")
       .on("click", () => {
         let numNeurons = state.networkShape[i];
         if (numNeurons <= 1) {
@@ -880,10 +879,7 @@ function addPlusMinusControl(x: number, layerIdx: number) {
         state.networkShape[i]--;
         parametersChanged = true;
         reset();
-      })
-    .append("i")
-      .attr("class", "material-icons")
-      .text("remove");
+      });
 
   let suffix = state.networkShape[i] > 1 ? "s" : "";
   div.append("div").text(
